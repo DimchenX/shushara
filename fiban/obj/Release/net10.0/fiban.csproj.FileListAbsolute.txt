@@ -1,0 +1,14 @@
+D:\bin\dotnet\fiban\bin\Release\net10.0\fiban.exe
+D:\bin\dotnet\fiban\bin\Release\net10.0\fiban.deps.json
+D:\bin\dotnet\fiban\bin\Release\net10.0\fiban.runtimeconfig.json
+D:\bin\dotnet\fiban\bin\Release\net10.0\fiban.dll
+D:\bin\dotnet\fiban\bin\Release\net10.0\fiban.pdb
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.GeneratedMSBuildEditorConfig.editorconfig
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.AssemblyInfoInputs.cache
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.AssemblyInfo.cs
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.csproj.CoreCompileInputs.cache
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.dll
+D:\bin\dotnet\fiban\obj\Release\net10.0\refint\fiban.dll
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.pdb
+D:\bin\dotnet\fiban\obj\Release\net10.0\fiban.genruntimeconfig.cache
+D:\bin\dotnet\fiban\obj\Release\net10.0\ref\fiban.dll

@@ -1,0 +1,36 @@
+~/OneDrive/Рабочий стол $ time python bench.py
+fib( 46 )=  1836311903
+
+real    4m 33.57s
+user    4m 32.48s
+sys     0m 0.18s
+
+~/OneDrive/Рабочий стол $ time "C:\Users\Dimo1\OneDrive\Рабочий стол\fib.exe"
+fib = 1836311903
+
+Command exited with non-zero status 95
+real    0m 9.54s
+user    0m 9.28s
+sys     0m 0.03s
+
+~/OneDrive/Рабочий стол $ time java "fib"
+1836311903
+
+real    0m 11.37s
+user    0m 0.00s
+sys     0m 0.01s
+
+~/OneDrive/Рабочий стол $ time node fib.js
+fib = 1836311903
+
+real    0m 19.91s
+user    0m 19.82s
+sys     0m 0.06s
+
+~/OneDrive/Рабочий стол $ time "C:\Users\Dimo1\OneDrive\Рабочий стол\CS\fiban\bin\Release\net10.0\fiban.exe"
+Fib = 1836311903
+
+Hello, World!
+real    0m 6.07s
+user    0m 6.04s
+sys     0m 0.03s
