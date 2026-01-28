@@ -1,5 +1,5 @@
 format PE64 console
-stack 20000h
+;stack 20000h
 entry start
 
 include 'win64a.inc'
@@ -11,11 +11,12 @@ push 46
 call fib
 push rax
 cinvoke prin, msg, rax
-;cinvoke prin, msg+6, qword[cou_]
+cinvoke prin, msg+6, qword[cou_]
 pop rax
 ret
 
 fib:
+inc qword[cou_]
 mov rcx, qword[rsp+8]
 cmp rcx, 2
 jl .end
@@ -32,7 +33,6 @@ pop rcx
 add rcx, rax
 .end:
 mov rax, rcx
-;inc qword[cou_]
 ret 8
 
 align 10h
@@ -44,6 +44,6 @@ end data
 
 align 10h
 
-;cou_  dq 0
-msg db "fib = %d", 0Ah, 0Ah, 0
+msg db "fib = %llu", 0Ah, 0Ah, 0
+cou_ rq 1
 
