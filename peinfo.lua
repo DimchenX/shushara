@@ -5,18 +5,21 @@ pefile:close()
 print()
 local function dump(d)
 local s=""
+local r=0
   for i=1, #d  do
     s=s .. " " .. string.format("%02X",d[i])
     if i % 16 == 0 then
-      print(s)
+      print(string.format(" 0x%04X: " , i - 16) .. s)
       s = ""
     end
   end
-  print (s)
+  if #s > 0 then
+    print(string.format(" 0x%04X: " , #d - (#d & 15)) .. s)
+  end  
   return #d
 end
 
-print("Table size: ", dump({string.byte(pedatas,1,-1)}))
+print("\n Table size: ", dump({string.byte(pedatas,1,-1)}))
 
 local pehd=string.unpack("< L",string.sub(pedatas,61,64))
 print("\nPE HEADOFFSET :" ,pehd)
