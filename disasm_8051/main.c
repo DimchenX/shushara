@@ -1,29 +1,15 @@
-// Copyright 2021 IOsetting <iosetting(at)outlook.com>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
-/***
+#include "stc8h.h"
 
- */
-
-
-#include "stc8hx.h"
-
-typedef unsigned char   uint8_t;
+typedef unsigned char    uint8_t;
 typedef unsigned short  uint16_t;
 typedef unsigned        uint32_t;
+typedef __data  uint8_t*     du8_t;
+typedef __code  uint16_t*   cu16_t;
+typedef __xdata uint16_t*   xu16_t;
 
-void READ_DATA(uint8_t adres);
+
+void READ_DATA(du8_t adres, uint8_t count);
 void READ_CODE(uint16_t adres, uint8_t count);
 void toHEX(uint8_t __xdata const *H, uint16_t count);
 void Uart1_Init(void);
@@ -31,40 +17,52 @@ void Timer0_Init(void);
 void UART_SEND_BYTE(uint8_t B);
 void UART_SEND_String(uint8_t __xdata const *msg);
 
+
 __xdata uint8_t RX_bufc;
 __xdata uint8_t RX_buf[128];
 __xdata uint8_t TX_bufc;
 __xdata uint8_t TX_buf[128];
-__xdata uint8_t HEX_bufc;
 __xdata uint8_t HEX_buf[128*2];
 __xdata uint8_t Buffer[128];
 __code  uint8_t HEX_TAB[17] = "0123456789ABCDEF";
 __code __at(0x0000) uint8_t _CODE_PAGE_[]; 
-__data __at(0x0000) uint8_t _DATA_PAGE_[0xff];
 __bit   TX_busy;
 
-
-void READ_DATA(uint8_t adres)
+/*
+void pulse_pl_c(void) {
+	P33 = 0;
+    __asm
+        nop
+        nop
+        nop
+    __endasm;
+	P33 = 1;
+}
+*/
+void READ_DATA(du8_t adres, uint8_t count)
 {
-	Buffer[127] = _DATA_PAGE_[adres];
+	uint8_t i = 0;
+	while(count--)
+		Buffer[i++] = *adres++;
 } 
 
 void READ_CODE(uint16_t adres, uint8_t count)
 {   
 	uint8_t i = 0;
 	while(count--)
-	Buffer[i] = _CODE_PAGE_[adres+i]; i++;
+	Buffer[i++] = *(cu16_t)adres++;
 	
 }
 
 void toHEX(uint8_t __xdata const *H, uint16_t count)
 {
+	uint8_t i = 0;
     while (count--) {
         uint8_t b = *H++;
-        HEX_buf[HEX_bufc++] = HEX_TAB[b >> 4];
-        HEX_buf[HEX_bufc++] = HEX_TAB[b & 0x0F];
+        HEX_buf[i++] = HEX_TAB[b >> 4];
+        HEX_buf[i++] = HEX_TAB[b & 0x0F];
     }
-    HEX_buf[HEX_bufc] = '\0';
+    HEX_buf[i] = '\0';
 }
 
 void Timer0_Isr(void) __interrupt(1)
@@ -124,21 +122,18 @@ void UART_SEND_BYTE(uint8_t B)
 
 void UART_SEND_String(uint8_t __xdata const *msg)
 {
-	uint8_t i = 0;
-	while(msg[i])
-		UART_SEND_BYTE(msg[i++]);
+	while(*msg)
+		UART_SEND_BYTE(*msg++);
 }
 
 void UART_SEND_Stringc(uint8_t __code const *msg)
 {
-	uint8_t i = 0;
-	while(msg[i])
-		UART_SEND_BYTE(msg[i++]);
+	while(*msg)
+		UART_SEND_BYTE(*msg++);
 }
 
 int main(void)
 {
-    //SYS_SetClock();
    
 	P3M0 = 0;
 	P3M1 = 0;
@@ -150,19 +145,21 @@ int main(void)
 
 	TX_bufc = 0;
 	RX_bufc = 0;
-	HEX_bufc = 0;
 
 	Uart1_Init();
 	Timer0_Init();
-
+    
+	uint8_t i = 0;
     while(1)
     {
 		UART_SEND_Stringc("HELLO\t\n");
 		READ_CODE(0x00, 0x20);
-		toHEX(Buffer, 0x20);
-		UART_SEND_String(HEX_buf);
-		READ_DATA(0x55);
-		UART_SEND_BYTE(Buffer[127]);
+		toHEX(&Buffer[0], 0x20);
+		UART_SEND_String(&HEX_buf[0]);
+		READ_DATA((du8_t)i, 16);
+		i += 16;
+		toHEX(&Buffer[0], 0x10);
+		UART_SEND_BYTE(HEX_buf[0]);
 		UART_SEND_BYTE('\n');
         P33 = !P33;
     }

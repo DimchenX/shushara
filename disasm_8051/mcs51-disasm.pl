@@ -392,18 +392,23 @@ sub _defined($)
 
 	# Records a definition.
 
-sub define($)
-  {
-  my ($Name) = ($_[0] =~ /^(\S+)/o);
-  my $Body = ${^POSTMATCH};
+sub define {
+    my ($input) = @_;
 
-  $Body =~ s/^\s+//o;
+    # ѕровер€ем, что строка не пуста€ и содержит им€
+    unless ($input =~ /^\s*(\S+)\s*(.*)$/) {
+        die "define(): Invalid definition format: \"$input\"\n";
+    }
 
-  die "define(): This definition already exists: \"$Name\"\n" if (_defined($Name));
+    my $Name = $1;
+    my $Body = $2;
 
-        # The definition is in fact unnecessary.
-  $pp_defines{$Name} = $Body;
-  }
+    die "define(): This definition already exists: \"$Name\"\n"
+        if _defined($Name);
+
+    $pp_defines{$Name} = $Body;
+}
+
 
 #-------------------------------------------------------------------------------
 
