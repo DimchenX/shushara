@@ -10,6 +10,7 @@ typedef __xdata uint16_t*   xu16_t;
 
 
 void READ_DATA(du8_t adres, uint8_t count);
+void READ_XDATA(xu16_t adres, uint8_t count);
 void READ_CODE(uint16_t adres, uint8_t count);
 void toHEX(uint8_t __xdata const *H, uint16_t count);
 void Uart1_Init(void);
@@ -18,28 +19,36 @@ void UART_SEND_BYTE(uint8_t B);
 void UART_SEND_String(uint8_t __xdata const *msg);
 
 
-__xdata uint8_t RX_bufc;
-__xdata uint8_t RX_buf[128];
+__xdata uint8_t volatile RX_bufc;
+__xdata uint8_t volatile RX_buf[128];
 __xdata uint8_t TX_bufc;
 __xdata uint8_t TX_buf[128];
-__xdata uint8_t HEX_buf[128*2];
+__xdata uint8_t volatile HEX_buf[128*2];
 __xdata uint8_t Buffer[128];
 __code  uint8_t HEX_TAB[17] = "0123456789ABCDEF";
-__code __at(0x0000) uint8_t _CODE_PAGE_[]; 
-__bit   TX_busy;
+__bit volatile TX_busy;
 
-/*
+
 void pulse_pl_c(void) {
-	P33 = 0;
     __asm
+		clr _P33
         nop
         nop
         nop
+	 	setb _P33
     __endasm;
-	P33 = 1;
+    //P33 = 1; 
+
 }
-*/
+
 void READ_DATA(du8_t adres, uint8_t count)
+{
+	uint8_t i = 0;
+	while(count--)
+		Buffer[i++] = *adres++;
+} 
+
+void READ_XDATA(xu16_t adres, uint8_t count)
 {
 	uint8_t i = 0;
 	while(count--)
@@ -80,8 +89,8 @@ void Uart1_Isr(void) __interrupt(4)
 
 	if (RI)				//Check UART1 receive interrupt
 	{
-			RX_buf[RX_bufc++] = SBUF;
-			RX_bufc &= 127;
+		RX_buf[RX_bufc++] = SBUF;
+		RX_bufc &= 127;
 		RI = 0;			//Clear UART1 receive interrupt flag
 	}
 }
@@ -150,17 +159,38 @@ int main(void)
 	Timer0_Init();
     
 	uint8_t i = 0;
+
+	UART_SEND_Stringc("HELLO from STC8H8K64U\t\n\n");
+	
+	UART_SEND_Stringc("PROC:\t\n");
+	READ_XDATA((xu16_t)0xFE00, 8);
+	toHEX(&Buffer[0], 8);
+	UART_SEND_String(&HEX_buf[0]);
+
+    UART_SEND_Stringc("\t\n\nCODE 0x00-0x20:\t\n");
+	READ_CODE(0x00, 0x20);
+	toHEX(&Buffer[0], 0x20);
+	UART_SEND_String(&HEX_buf[0]);
+	UART_SEND_Stringc("\t\n\n0x");
+
     while(1)
-    {
-		UART_SEND_Stringc("HELLO\t\n");
-		READ_CODE(0x00, 0x20);
-		toHEX(&Buffer[0], 0x20);
+    {   Buffer[0] = i;
+		toHEX(&Buffer[0], 1);
 		UART_SEND_String(&HEX_buf[0]);
+		UART_SEND_Stringc(": ");
 		READ_DATA((du8_t)i, 16);
 		i += 16;
 		toHEX(&Buffer[0], 0x10);
-		UART_SEND_BYTE(HEX_buf[0]);
-		UART_SEND_BYTE('\n');
-        P33 = !P33;
+		UART_SEND_String(&HEX_buf[0]);
+		UART_SEND_Stringc("\t\n");
+        
+		__asm
+			cpl _P33   //P33 = !P33;
+			push DPH
+			push DPL
+			mov DPTR, #_HEX_buf
+			pop  DPL
+			pop  DPL
+		__endasm;
     }
 }
